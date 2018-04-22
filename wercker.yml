@@ -8,7 +8,7 @@ build:
         MYSQL_ROOT_PASSWORD: secret
         MYSQL_USER: root
 
-  step:
+  steps:
     - script:
       name: install packages
       code:
