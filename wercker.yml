@@ -1,0 +1,28 @@
+box: ruby:2.5-slim
+
+build:
+  services:
+    - id: mysql
+      tag: 5.7
+      env:
+        MYSQL_ROOT_PASSWORD: secret
+        MYSQL_USER: root
+
+  step:
+    - script:
+      name: install packages
+      code:
+        apt-get update
+        apt-get install -y build-essential curl default-libmysqlclient-dev
+    - bundle-install
+    - script:
+      name: setup database
+      code: |
+        RAILS_ENV=test \
+        DATABASE_HOSTNAME=$MYSQL_PORT_3306_TCP_ADDR \
+        bin/rails db:create db:schema:load
+    - script:
+      name: unit test
+      code: |
+        DATABASE_HOSTNAME=$MYSQL_PORT_3306_TCP_ADDR \
+        rspec spec
