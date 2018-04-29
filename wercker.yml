@@ -28,3 +28,32 @@ build:
       code: |
         DATABASE_HOSTNAME=$MYSQL_PORT_3306_TCP_ADDR \
         rspec spec
+
+deploy:
+  steps:
+    - script:
+      name: prepare to push to ecr
+      code: |
+        export ECR_TAG=`echo $WERCKER_GIT_BRANCH | sed 's/[^[:alnum:]_.-]//g'`
+        echo $ECR_TAG
+    - script:
+      name: install packages
+      code: |
+        apt-get update
+        apt-get install -y build-essential curl default-libmysqlclient-dev
+        curl -sL https://deb.nodesource.com/setup_8.x | bash -
+        apt-get install -y nodejs
+    - bundle-install
+    - script:
+      name: assets precompile
+      code: |
+        bin/rake assets:precompile RAILS_ENV=production
+    - internal/docker-push:
+      aws-access-key: $AWS_ACCESS_KEY_ID
+      aws-secret-key: $AWS_SECRET_ACCESS_KEY
+      aws-region: $AWS_REGION
+      aws-registry-id: $AWS_REGISTRY_ID
+      repository: rails-wercker
+      tag: $ECR_TAG
+      working-dir: /myapp
+      cmd: ./bin/rails s -e production
