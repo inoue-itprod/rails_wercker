@@ -20,3 +20,4 @@ ADD Gemfile.lock /myapp/Gemfile.lock
 RUN bundle install
 # && yarn install
 ADD . /myapp
+CMD bin/rails s -e production

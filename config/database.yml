@@ -51,5 +51,7 @@ test:
 production:
   <<: *default
   database: rails_wercker_production
-  username: rails_wercker
-  password: <%= ENV['RAILS_WERCKER_DATABASE_PASSWORD'] %>
+  host: <%= ENV.fetch('AWS_RDB_ENDPOINT', 'db') %>
+  port: 3306
+  username: <%= ENV.fetch('AWS_RDB_USERNAME', 'root') %>
+  password: <%= ENV.fetch('AWS_RDB_PASSWORD', 'secret') %>
