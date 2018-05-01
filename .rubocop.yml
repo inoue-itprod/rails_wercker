@@ -1,0 +1,25 @@
+AllCops:
+  TargetRubyVersion: 2.5.1
+  Exclude:
+    - Gemfile
+    - bin/**/*
+    - db/schema.rb
+    - vendor/bundle/**/*
+
+LineLength:
+  Max: 120
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Style/Documentation:
+  Exclude:
+    - config/**/*
+    - db/migrate/*
+
+Metrics/BlockLength:
+  Max: 200
+
+Style/BlockComments:
+  Exclude:
+    - spec/spec_helper.rb
