@@ -27,7 +27,7 @@ RSpec.describe ArticlesController, type: :controller do
   # This should return the minimal set of attributes required to create a valid
   # Article. As you add validations to Article, be sure to
   # adjust the attributes here as well.
-  let(:valid_attributes) { { title: 'test', body: 'test', posted_date: Date.today } }
+  let(:valid_attributes) { { title: 'test', body: 'test', posted_date: Time.zone.today } }
 
   let(:invalid_attributes) { skip('Add a hash of attributes invalid for your model') }
 
@@ -68,15 +68,15 @@ RSpec.describe ArticlesController, type: :controller do
   end
 
   describe 'POST #create' do
-    let(:post_attrs) { { params: { article: valid_attributes }, session: valid_session } }
+    let(:post_request) { post :create, params: { article: valid_attributes }, session: valid_session }
 
     context 'with valid params' do
       it 'creates a new Article' do
-        expect { post :create, post_attrs }.to change(Article, :count).by(1)
+        expect { post_request }.to change(Article, :count).by(1)
       end
 
       it 'redirects to the created article' do
-        post :create, post_attrs
+        post_request
         expect(response).to redirect_to(Article.last)
       end
     end
@@ -119,14 +119,14 @@ RSpec.describe ArticlesController, type: :controller do
   describe 'DELETE #destroy' do
     before { article }
     let(:article) { Article.create! valid_attributes }
-    let(:delete_attrs) { { params: { id: article.to_param }, session: valid_session } }
+    let(:delete_request) { delete :destroy, params: { id: article.to_param }, session: valid_session }
 
     it 'destroys the requested article' do
-      expect { delete :destroy, delete_attrs }.to change(Article, :count).by(-1)
+      expect { delete_request }.to change(Article, :count).by(-1)
     end
 
     it 'redirects to the articles list' do
-      delete :destroy, delete_attrs
+      delete_request
       expect(response).to redirect_to(articles_url)
     end
   end
