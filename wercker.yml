@@ -1,0 +1,110 @@
+box: ruby:2.5-slim
+
+build:
+  services:
+    - id: mysql
+      tag: 5.7
+      env:
+        MYSQL_ROOT_PASSWORD: secret
+        MYSQL_USER: root
+
+  steps:
+    - script:
+      name: install packages
+      code: |
+        apt-get update
+        apt-get install -y build-essential curl default-libmysqlclient-dev
+        curl -sL https://deb.nodesource.com/setup_8.x | bash -
+        apt-get install -y nodejs
+    - bundle-install
+    - script:
+      name: setup database
+      code: |
+        RAILS_ENV=test \
+        DATABASE_HOSTNAME=$MYSQL_PORT_3306_TCP_ADDR \
+        bin/rails db:create db:schema:load
+    - script:
+      name: unit test
+      code: |
+        DATABASE_HOSTNAME=$MYSQL_PORT_3306_TCP_ADDR \
+        rspec spec
+
+push-to-ecr-test:
+  steps:
+    - internal/docker-push:
+      aws-access-key: $AWS_ACCESS_KEY_ID
+      aws-secret-key: $AWS_SECRET_ACCESS_KEY
+      aws-region: $AWS_REGION
+      aws-registry-id: $AWS_REGISTRY_ID
+      repository: rails-wercker
+      tag: test
+
+push-to-ecr:
+  steps:
+    - script:
+      name: prepare to push to ecr
+      code: |
+        export ECR_TAG=`echo $WERCKER_GIT_BRANCH | sed 's/[^[:alnum:]_.-]//g'`
+    - script:
+      name: move to rails dir
+      code: |
+        mkdir /app
+        cp -r $WERCKER_SOURCE_DIR/* /app
+    - script:
+      name: install packages
+      code: |
+        apt-get update
+        apt-get install -y build-essential curl default-libmysqlclient-dev
+        curl -sL https://deb.nodesource.com/setup_8.x | bash -
+        apt-get install -y nodejs
+    - bundle-install:
+      cwd: /app
+    - script:
+      name: assets precompile
+      cwd: /app
+      code: |
+        bin/rake assets:precompile RAILS_ENV=production
+    - internal/docker-push:
+      aws-access-key: $AWS_ACCESS_KEY_ID
+      aws-secret-key: $AWS_SECRET_ACCESS_KEY
+      aws-region: $AWS_REGION
+      aws-registry-id: $AWS_REGISTRY_ID
+      repository: rails-wercker
+      tag: $ECR_TAG
+      cmd: rails server -e production
+      working-dir: /app
+      ports: 3000
+
+deploy-to-ecs:
+  box: python:2.7-slim
+  steps:
+    - script:
+      name: prepare to deploy to ecs
+      code: |
+        export ECR_TAG=`echo $WERCKER_GIT_BRANCH | sed 's/[^[:alnum:]_.-]//g'`
+    - script:
+      name: move to deploy dir
+      code: |
+        mkdir /deploy
+        cp $WERCKER_SOURCE_DIR/deploy/* /deploy
+    - script:
+      name: template
+      cwd: /deploy
+      code: |
+        ./template.sh
+        cat < /deploy/task-definition.json
+    - 1science/aws-ecs:
+      key: $AWS_ACCESS_KEY_ID
+      secret: $AWS_SECRET_ACCESS_KEY
+      region: $AWS_REGION
+      cluster-name: rails-wercker-cluster
+      service-name: rails-wercker-service
+      task-definition-name: rails-wercker-web
+      task-definition-file: /deploy/task-definition.json
+
+feature-spec:
+  steps:
+    - script:
+      name: test
+      code: echo test
+    

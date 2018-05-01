@@ -21,8 +21,11 @@
 
 /public/assets
 .byebug_history
+.wercker
+.env
 
 # Ignore master key for decrypting credentials and more.
 /config/master.key
 
 /vendor/bundle
+/deploy/task-definition.json
