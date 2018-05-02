@@ -24,14 +24,14 @@ build:
         DATABASE_HOSTNAME=$MYSQL_PORT_3306_TCP_ADDR \
         bin/rails db:create db:schema:load
     - script:
+      name: linter
+      code: |
+        rubocop -R
+    - script:
       name: unit test
       code: |
         DATABASE_HOSTNAME=$MYSQL_PORT_3306_TCP_ADDR \
         rspec spec
-    - script:
-      name: linter
-      code: |
-        rubocop -R
 
 push-to-ecr-test:
   steps:
@@ -109,6 +109,38 @@ deploy-to-ecs:
 feature-spec:
   steps:
     - script:
-      name: test
-      code: echo test
-    
+      name: install packages
+      code: |
+        apt-get update -qq
+        apt-get install -y build-essential curl
+        apt-get install -y unzip libnss3-tools
+    - script:
+      name: setup fonts
+      code: |
+        mkdir -p /usr/share/fonts/noto
+        curl -o /tmp/NotoSansCJKjp-hinted.zip https://noto-website-2.storage.googleapis.com/pkgs/NotoSansCJKjp-hinted.zip
+        unzip /tmp/NotoSansCJKjp-hinted.zip -d /usr/share/fonts/noto/
+    - script:
+      name: setup chrome
+      code: |
+        curl https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
+        sh -c 'echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+        apt-get update && apt-get install -y google-chrome-stable
+    - script:
+      name: setup chromedriver
+      code: |
+        curl -o /tmp/chromedriver_linux64.zip https://chromedriver.storage.googleapis.com/$(curl -fsSL https://chromedriver.storage.googleapis.com/LATEST_RELEASE)/chromedriver_linux64.zip
+        unzip /tmp/chromedriver_linux64.zip -d /usr/local/bin
+    - script:
+      name: move to spec dir
+      code: |
+        mkdir /spec
+        cp $WERCKER_SOURCE_DIR/feature_spec/environment/Gemfile /spec
+        cp $WERCKER_SOURCE_DIR/feature_spec/environment/Gemfile.lock /spec
+        cp -r $WERCKER_SOURCE_DIR/feature_spec /spec
+        ls /spec
+    - script:
+      name: feature test
+      cwd: /spec
+      code: |
+        rspec feature_spec
