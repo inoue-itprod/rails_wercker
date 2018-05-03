@@ -17,4 +17,9 @@ services:
       - BUNDLE_PATH=/myapp/vendor/bundle
     depends_on:
       - db
-
+  feature_spec:
+    build:
+      context: .
+      dockerfile: ./feature_spec/environment/Dockerfile
+    environment:
+      TARGET_URL: http://127.0.0.1:3000
