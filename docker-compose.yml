@@ -22,4 +22,5 @@ services:
       context: .
       dockerfile: ./feature_spec/environment/Dockerfile
     environment:
-      TARGET_URL: http://127.0.0.1:3000
+      TARGET_PROT: http
+      TARGET_HOST: localhost:3000

@@ -32,7 +32,7 @@ Capybara.register_driver :selenium do |app|
 end
 
 Capybara.configure do |capybara|
-  capybara.app_host = ENV['TARGET_URL']
+  capybara.app_host = "#{ENV['TARGET_PROT']}://#{ENV['TARGET_HOST']}"
   capybara.default_driver = :selenium
 end
 
