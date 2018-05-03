@@ -138,7 +138,8 @@ feature-spec:
         cp $WERCKER_SOURCE_DIR/feature_spec/environment/Gemfile /spec
         cp $WERCKER_SOURCE_DIR/feature_spec/environment/Gemfile.lock /spec
         cp -r $WERCKER_SOURCE_DIR/feature_spec /spec
-        ls /spec
+    - bundle-install:
+      cwd: /spec
     - script:
       name: feature test
       cwd: /spec
