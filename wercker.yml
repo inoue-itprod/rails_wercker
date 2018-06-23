@@ -26,7 +26,7 @@ build:
     - script:
       name: linter
       code: |
-        rubocop -R
+        bundle exec rubocop -R
     - script:
       name: unit test
       code: |
