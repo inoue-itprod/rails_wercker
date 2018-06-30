@@ -2,6 +2,7 @@ version: '3'
 services:
   db:
     image: mysql
+    entrypoint: ['docker-entrypoint.sh', '--default-authentication-plugin=mysql_native_password']
     environment:
       MYSQL_ROOT_PASSWORD: secret
     ports:

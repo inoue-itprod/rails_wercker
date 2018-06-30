@@ -26,12 +26,12 @@ build:
     - script:
       name: linter
       code: |
-        rubocop -R
+        bundle exec rubocop -R
     - script:
       name: unit test
       code: |
         DATABASE_HOSTNAME=$MYSQL_PORT_3306_TCP_ADDR \
-        rspec spec
+        bundle  exec rspec spec
 
 push-to-ecr-test:
   steps:
