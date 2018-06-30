@@ -5,6 +5,8 @@ services:
     entrypoint: ['docker-entrypoint.sh', '--default-authentication-plugin=mysql_native_password']
     environment:
       MYSQL_ROOT_PASSWORD: secret
+    volumes:
+      - ./tmp/db:/var/lib/mysql
     ports:
       - 3306:3306
   web:
@@ -16,6 +18,8 @@ services:
       - 3000:3000
     environment:
       - BUNDLE_PATH=/myapp/vendor/bundle
+    tty: true
+    stdin_open: true
     depends_on:
       - db
   feature_spec:
